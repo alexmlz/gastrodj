@@ -25,7 +25,9 @@ SECRET_KEY = 's+bm1bf2d4&+x)yw2l5zwlz78yx8b3ky%p04haao)8+dg^dwj7'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    '172.17.12.10'
+]
 
 CORS_ORIGIN_ALLOW_ALL = True
 
@@ -91,6 +93,10 @@ DATABASES = {
         
     }
 }
+
+CORS_ORIGIN_WHITELIST = (
+    'http://172.17.12.10',
+)
 
 
 # Password validation
