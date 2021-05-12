@@ -11,6 +11,34 @@ class Product(models.Model):
         db_table = 'product'
 
 
+class User(models.Model):
+    description = models.CharField(max_length=100, blank=True, null=True)
+    intnr = models.BigIntegerField(null=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+
+    class Meta:
+        db_table = 'user'
+
+
+class Mt(models.Model):
+    description = models.CharField(max_length=100, blank=True, null=True)
+    intnr = models.BigIntegerField(null=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    user = models.ForeignKey(User, on_delete=models.PROTECT, null=True)
+
+    class Meta:
+        db_table = 'mt'
+
+
+class Domain(models.Model):
+    description = models.CharField(max_length=100, blank=True, null=True)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
+
+    class Meta:
+        db_table = 'domain'
+
+
 class Status(models.Model):
     description = models.CharField(max_length=30, blank=True, null=True)
 
@@ -25,8 +53,11 @@ class Pair(models.Model):
     strassenr = models.CharField(max_length=150, blank=True, null=True)
     plzstadt = models.CharField(max_length=100, blank=True, null=True)
     telefonnr = models.CharField(max_length=50, blank=True, null=True)
-    user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
+    email = models.CharField(max_length=50, blank=True, null=True)
+    addzusatz = models.CharField(max_length=50, blank=True, null=True)
+    # user = models.ForeignKey('auth.User', on_delete=models.CASCADE)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'pair'
@@ -37,6 +68,7 @@ class Pp(models.Model):
     ext_datum = models.DateField(blank=True, null=True)
     status = models.ForeignKey(Status, on_delete=models.PROTECT, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'pp'
@@ -53,6 +85,7 @@ class PaymentDetail(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
     method = models.ForeignKey(Method, on_delete=models.PROTECT, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'paymentdetail'
@@ -62,6 +95,7 @@ class Paypal(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
     paymentdetail = models.ForeignKey(PaymentDetail, on_delete=models.PROTECT, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'paypal'
@@ -71,9 +105,18 @@ class Cash(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
     paymentdetail = models.ForeignKey(PaymentDetail, on_delete=models.PROTECT, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'cash'
+
+
+class OptionCat(models.Model):
+    description = models.CharField(max_length=100, blank=True, null=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
+
+    class Meta:
+        db_table = 'option_cat'
 
 
 class Cat(models.Model):
@@ -84,6 +127,7 @@ class Cat(models.Model):
     cat2 = models.CharField(max_length=25, blank=True, null=True)
     cat3 = models.CharField(max_length=25, blank=True, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'cat'
@@ -91,11 +135,18 @@ class Cat(models.Model):
 
 class Nugget(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
+    menge = models.DecimalField(max_digits=20, decimal_places=5, blank=True, null=True)
+    einzelpreis = models.DecimalField(max_digits=20, decimal_places=5, blank=True, null=True)
+    einheit = models.CharField(max_length=10, blank=True, null=True)
+    addonflag = models.BooleanField(default=False)
     description_long = models.CharField(max_length=200, blank=True, null=True)
     nuggetnr = models.BigIntegerField(null=True)
     pic_url = models.CharField(max_length=100, blank=True, null=True)
+    active = models.BooleanField(default=False)
     # cat = models.ForeignKey(Cat, on_delete=models.PROTECT, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
+    optioncat = models.ForeignKey(OptionCat, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'nugget'
@@ -106,6 +157,7 @@ class NuggetCat(models.Model):
     cat = models.ForeignKey(Cat, on_delete=models.CASCADE, null=True)
     nugget = models.ForeignKey(Nugget, on_delete=models.CASCADE, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'nugget_cat'
@@ -119,6 +171,8 @@ class Folg(models.Model):
     method = models.ForeignKey(Method, on_delete=models.PROTECT, null=True)
     paymentdetails = models.ForeignKey(PaymentDetail, on_delete=models.PROTECT, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    counter = models.IntegerField(null=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'folg'
@@ -126,23 +180,21 @@ class Folg(models.Model):
 
 class Basket(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
+    note = models.CharField(max_length=100, blank=True, null=True)
     nugget = models.ForeignKey(Nugget, on_delete=models.PROTECT, null=True)
-    method = models.ForeignKey(Method, on_delete=models.PROTECT, null=True)
+    menge = models.DecimalField(max_digits=20, decimal_places=5, blank=True, null=True)
+    einzelpreis = models.DecimalField(max_digits=20, decimal_places=5, blank=True, null=True)
+    value = models.DecimalField(max_digits=20, decimal_places=5, blank=True, null=True)
+    einheit = models.CharField(max_length=10, blank=True, null=True)
+    # indeicates if a nugget has addon nuggets
+    group = models.IntegerField(null=True)
+    addonCount = models.IntegerField(null=True)
+    addonflag = models.BooleanField(default=False)
     folg = models.ForeignKey(Folg, on_delete=models.PROTECT, null=True)
-    user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
+    # user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
     lastchanged = models.DateTimeField(auto_now=True)
+    mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'basket'
 
-
-class ShoppingCart(models.Model):
-    description = models.CharField(max_length=100, blank=True, null=True)
-    nugget = models.ForeignKey(Nugget, on_delete=models.PROTECT, null=True)
-    method = models.ForeignKey(Method, on_delete=models.PROTECT, null=True)
-    folg = models.ForeignKey(Folg, on_delete=models.PROTECT, null=True)
-    user = models.ForeignKey('auth.User', on_delete=models.PROTECT)
-    lastchanged = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'shopping_cart'
