@@ -302,7 +302,8 @@ def basket_details(request, domainname, folg_id):
             nugget['value'] = nugget.get('einzelpreis')
             # nugget['value'] = nugget.get('einzelpreis')
             # get parent in basket to add one addoncount
-            basket_nugget = Basket.objects.get(nugget_id=parent_nugget_id, group=group_id, mt_id=mt_id)
+            basket_nugget = Basket.objects.get(nugget_id=parent_nugget_id, folg_id=folg_id,
+                                               group=group_id, mt_id=mt_id)
             addon_basket = Basket.objects.create(**nugget)
             if addon_basket:
                 current_addon_count = basket_nugget.addonCount
