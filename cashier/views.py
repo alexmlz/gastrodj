@@ -327,8 +327,9 @@ def basket_details(request, domainname, folg_id):
         group_id = nugget.get('group')
         new_menge = nugget.get('menge')
         nugget_id = nugget.get('nugget_id')
-        nugget_basket = Basket.objects.get(nugget_id=parent_nugget_id, group=group_id, mt_id=mt_id)
-        addon_basket = Basket.objects.get(nugget_id=nugget_id, group=group_id, folg_id=folg_id)
+        nugget_basket = Basket.objects.get(nugget_id=parent_nugget_id, folg_id=folg_id,
+                                           group=group_id, mt_id=mt_id)
+        addon_basket = Basket.objects.get(nugget_id=nugget_id, group=group_id, folg_id=folg_id, mt_id=mt_id)
         # check if + or -
         menge_diff = new_menge - addon_basket.menge
         cur_value = nugget_basket.value
