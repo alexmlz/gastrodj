@@ -160,7 +160,7 @@ def addon_list(request, domainname):
         try:
             # nugget = Nugget.objects.get(pk=nugget_id)
             # get the Cat the current Nugget belongs to
-            nugget_cat = NuggetCat.objects.values('cat_id').get(mt_id=1, nugget_id=nugget_id)
+            nugget_cat = NuggetCat.objects.values('cat_id').get(mt_id=mt_id, nugget_id=nugget_id)
             cat_id = nugget_cat.get('cat_id')
         except NuggetCat.DoesNotExist:
             return Response(status=status.HTTP_404_NOT_FOUND)
@@ -187,7 +187,23 @@ def addon_list(request, domainname):
         return Response(return_list)
 
 
-@api_view(['GET', 'PUT','DELETE'])
+"""get nuggets based on given option cat for example extra topping will be id 4"""
+
+
+@api_view(['GET'])
+def addon_list_filtered(request, domainname, optioncat_id):
+    mt_id = _getmt(domainname)
+    if request.method == 'GET':
+        if optioncat_id:
+            add_query = Nugget.objects.values('pk', 'description', 'einzelpreis', 'menge',
+                                              'optioncat', 'optioncat__description') \
+                .filter(mt_id=mt_id, addonflag=True, optioncat_id=optioncat_id).order_by('description')
+            return_list = list(add_query)
+            # return_list = create_addon_list(add_list)
+            return Response(return_list)
+
+
+@api_view(['GET', 'PUT', 'DELETE'])
 def basket_addon_edit(request, domainname, basket_id):
     mt_id = _getmt(domainname)
     try:
@@ -233,6 +249,36 @@ def basket_addon_edit(request, domainname, basket_id):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
+"""get details for a given basketId"""
+
+
+@api_view(['GET'])
+def basket_single_detail(request, domainname, basketId):
+    mt_id = _getmt(domainname)
+    if request.method == 'GET':
+        basket_single = Basket.objects.values(
+            'id','description','note', 'nugget_id', 'einzelpreis','value', 'einheit', 'group', 'addonCount',
+            'addonflag', 'folg_id', 'lastchanged', 'mt_id', 'nugget__pic_url', 'nugget__nuggetcat__cat_id'
+        ).get(pk=basketId, mt_id=mt_id)
+        add_str = ""
+        value_sum = 0
+        addon_query = Basket.objects.values('nugget__description', 'menge', 'value') \
+            .filter(folg_id=basket_single.get('folg_id'), group=basket_single.get('group'), addonflag=True)
+        if addon_query:
+            addon_loop_list = list(addon_query)
+            for index, add in enumerate(addon_loop_list):
+                if index == len(addon_loop_list) - 1:
+                    add_str += str(int(add.get('menge'))) + 'x' + add.get('nugget__description')
+                else:
+                    add_str += str(int(add.get('menge'))) + 'x' + add.get('nugget__description') + ', '
+                value_sum += add.get('value')
+            basket_single['extra_str'] = add_str
+            basket_single['extra_sum'] = value_sum
+        # serializer = BasketSerializer(basket_single, context={'request': request}, many=False)
+        # return Response(serializer.data)
+        return Response(basket_single, status=status.HTTP_200_OK)
+
+
 @api_view(['GET', 'POST'])
 def basket_list(request, domainname):
     mt_id = _getmt(domainname)
@@ -262,7 +308,8 @@ def basket_details(request, domainname, folg_id):
                                         'value',
                                         'group',
                                         'note',
-                                        'nugget__pic_url')\
+                                        'nugget__pic_url',
+                                        'nugget__nuggetcat__cat_id')\
             .filter(folg_id=folg_id, addonflag=False).order_by('pk')
         # serializer = BasketSerializer(baskets, context={'request': request}, many=True)
         for bask in baskets:
@@ -399,8 +446,8 @@ def folg_list(request, domainname):
         # TODO maybe add anotherone  if menge is already 1 ????
         nugget['menge'] = 1
         nugget['value'] = nugget.get('einzelpreis')
-        basket = Basket(**nugget).save()
-        return Response({'cartId': folg_id, 'group': group_id}, status=status.HTTP_201_CREATED)
+        basket = Basket.objects.create(**nugget)
+        return Response({'cartId': folg_id, 'group': group_id, 'basketId': basket.pk}, status=status.HTTP_201_CREATED)
         # return Response('cannot create new Folg', status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'PUT':
         # create Pair and change status of folg
@@ -441,6 +488,43 @@ def folg_total(request, domainname, folg_id):
         return Response(sum_folg.get('value_sum'))
 
 
+"""the following will update the basket with option, teig or rand there can pnly be one of the named at atime 
+in one folg basket. thats why the other entry will be deleted if exist after that the new 
+(passed on will be created)"""
+
+
+@api_view(['POST'])
+def add_option(request, domainname, basket_id):
+    mt_id = _getmt(domainname)
+    if request.method == 'POST':
+        # get group, and selected option from request and add a new entry in basket for that group
+        # check if there is already an entry with option/ teig or rand there can be only one???
+        data = request.data
+        group_id = data.get('group')
+        optioncat_id = data.get('option_cat')
+        selected_id = data.get('nugget_add_id')
+        einzelpreis = data.get('einzelpreis')
+        folg_id = data.get('folg_id')
+        old_basket_einzelpreis = 0
+        try:
+            # check if there is already an option if yes delete it if not create it
+            basket = Basket.objects.get(folg_id=folg_id, nugget__optioncat_id=optioncat_id, group=group_id)
+            old_basket_einzelpreis = basket.einzelpreis
+            basket.delete()
+        except Basket.DoesNotExist:
+            pass
+        basket = Basket.objects.create(folg_id=folg_id, group=group_id, menge=1, einzelpreis=einzelpreis,
+                                       value=einzelpreis, addonflag=True, nugget_id=selected_id, mt_id=mt_id)
+        # get nugget from group which is not an addon and ann the einzelpreis of added addon/option to it
+        if basket:
+            main_basket = Basket.objects.get(folg_id=folg_id, group=group_id, addonflag=False)
+            curr_value = main_basket.value
+            new_value = curr_value - Decimal(old_basket_einzelpreis) + Decimal(einzelpreis)
+            main_basket.value = new_value
+            main_basket.save()
+            return Response(status=status.HTTP_201_CREATED)
+
+
 def create_addon_list(add_list):
     return_list = list()
     option_list = list()
@@ -454,6 +538,7 @@ def create_addon_list(add_list):
                 prev_desc = add.get('optioncat__description')
             else:
                 return_list.append({'description': prev_desc,
+                                    'id': prev_option,
                                     'nuggets': option_list})
                 option_list = list()
                 option_list.append(add)
@@ -468,6 +553,7 @@ def create_addon_list(add_list):
             if len(option_list) == 0:
                 option_list.append(add)
             return_list.append({'description': add.get('optioncat__description'),
+                                'id': add.get('optioncat'),
                                 'nuggets': option_list})
     return return_list
 

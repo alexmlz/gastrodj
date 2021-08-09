@@ -26,7 +26,8 @@ SECRET_KEY = 's+bm1bf2d4&+x)yw2l5zwlz78yx8b3ky%p04haao)8+dg^dwj7'
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    '172.17.12.10'
+    '172.17.12.10',
+    'localhost'
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -96,6 +97,8 @@ DATABASES = {
 
 CORS_ORIGIN_WHITELIST = (
     'http://172.17.12.10',
+    'http://localhost'
+    'localhost'
 )
 
 
