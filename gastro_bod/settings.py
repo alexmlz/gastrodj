@@ -99,6 +99,8 @@ DATABASES = {
 
 CORS_ORIGIN_WHITELIST = (
     'http://172.17.12.10',
+    'http://localhost'
+    'localhost'
 )
 
 
