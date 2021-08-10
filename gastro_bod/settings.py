@@ -23,10 +23,12 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 's+bm1bf2d4&+x)yw2l5zwlz78yx8b3ky%p04haao)8+dg^dwj7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = [
-    '172.17.12.10'
+    '172.17.12.10',
+    'localhost',
+    '127.0.0.1',
 ]
 
 CORS_ORIGIN_ALLOW_ALL = True
@@ -43,6 +45,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'mod_wsgi.server',
     'cashier',
 ]
 
