@@ -19,5 +19,7 @@ urlpatterns = [
     path('<domainname>/basketcount/<int:folg_id>/', views.basket_count, name='basket_count'),
     path('<domainname>/folgTotal/<int:folg_id>/', views.folg_total, name='folg_total'),
     path('<domainname>/option/<int:basket_id>/', views.add_option, name='add_option'),
+    path('<domainname>/checkDrink/<int:folg_id>/', views.check_drink, name='check_drink'),
+    path('<domainname>/folgStatus/<int:folg_id>/', views.folg_status, name='folg_status'),
 
 ]

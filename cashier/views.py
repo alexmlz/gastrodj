@@ -11,6 +11,7 @@ from rest_framework import status
 from decimal import Decimal
 from django.db.models import Count, Avg, Sum
 from django.db.models import Q, F
+import pytz
 
 # Create your views here.
 
@@ -241,7 +242,7 @@ def basket_addon_edit(request, domainname, basket_id):
                 new_value = basket.value - einzelpreis
             else:
                 new_value = basket.value + einzelpreis
-            Basket.objects.filter(folg_id=folg_id, group=group).update(menge=new_menge, value=new_value)
+            Basket.objects.filter(pk=basket_id).update(menge=new_menge, value=new_value)
         return Response(status=status.HTTP_204_NO_CONTENT)
     elif request.method == 'DELETE':
         Basket.objects.filter(folg_id=folg_id, group=group).delete()
@@ -257,7 +258,7 @@ def basket_single_detail(request, domainname, basketId):
     mt_id = _getmt(domainname)
     if request.method == 'GET':
         basket_single = Basket.objects.values(
-            'id','description','note', 'nugget_id', 'einzelpreis','value', 'einheit', 'group', 'addonCount',
+            'id', 'description', 'note', 'nugget_id', 'einzelpreis', 'menge', 'value', 'einheit', 'group', 'addonCount',
             'addonflag', 'folg_id', 'lastchanged', 'mt_id', 'nugget__pic_url', 'nugget__nuggetcat__cat_id'
         ).get(pk=basketId, mt_id=mt_id)
         add_str = ""
@@ -267,10 +268,14 @@ def basket_single_detail(request, domainname, basketId):
         if addon_query:
             addon_loop_list = list(addon_query)
             for index, add in enumerate(addon_loop_list):
-                if index == len(addon_loop_list) - 1:
-                    add_str += str(int(add.get('menge'))) + 'x' + add.get('nugget__description')
+                if int(add.get('menge')) > 1:
+                    extra_str = str(int(add.get('menge'))) + '×' + add.get('nugget__description')
                 else:
-                    add_str += str(int(add.get('menge'))) + 'x' + add.get('nugget__description') + ', '
+                    extra_str = add.get('nugget__description')
+                if index == len(addon_loop_list) - 1:
+                    add_str += extra_str
+                else:
+                    add_str += extra_str + ', '
                 value_sum += add.get('value')
             basket_single['extra_str'] = add_str
             basket_single['extra_sum'] = value_sum
@@ -319,11 +324,14 @@ def basket_details(request, domainname, folg_id):
             if addon_query:
                 addon_loop_list = list(addon_query)
                 for index, add in enumerate(addon_loop_list):
-                    if index == len(addon_loop_list) - 1:
-                        add_str += str(int(add.get('menge'))) + 'x' + add.get('nugget__description')
+                    if int(add.get('menge')) > 1:
+                        extra_str = str(int(add.get('menge'))) + '×' + add.get('nugget__description')
                     else:
-                        add_str += str(int(add.get('menge'))) + 'x' + add.get('nugget__description') + ', '
-
+                        extra_str = add.get('nugget__description')
+                    if index == len(addon_loop_list) - 1:
+                        add_str += extra_str
+                    else:
+                        add_str += extra_str + ', '
             bask['addonString'] = add_str
         return Response(baskets)
     elif request.method == 'POST':
@@ -443,9 +451,17 @@ def folg_list(request, domainname):
         nugget['folg_id'] = folg_id
         nugget['group'] = group_id
         nugget['addonCount'] = 0
+        nugget_id = nugget['nugget_id']
         # TODO maybe add anotherone  if menge is already 1 ????
         nugget['menge'] = 1
-        nugget['value'] = nugget.get('einzelpreis')
+        new_einzelpreis = nugget.get('einzelpreis')
+        if new_einzelpreis:
+            nugget['value'] = nugget.get('einzelpreis')
+        else:
+            temp_nugget = Nugget.objects.get(pk=nugget_id)
+            nugget['value'] = temp_nugget.einzelpreis
+            nugget['einzelpreis'] = temp_nugget.einzelpreis
+            nugget['description'] = temp_nugget.description
         basket = Basket.objects.create(**nugget)
         return Response({'cartId': folg_id, 'group': group_id, 'basketId': basket.pk}, status=status.HTTP_201_CREATED)
         # return Response('cannot create new Folg', status=status.HTTP_400_BAD_REQUEST)
@@ -523,6 +539,40 @@ def add_option(request, domainname, basket_id):
             main_basket.value = new_value
             main_basket.save()
             return Response(status=status.HTTP_201_CREATED)
+
+
+"""this method will retun true If a Beverage is available in the passed folg_id"""
+
+
+@api_view(['GET'])
+def check_drink(request, domainname, folg_id):
+    mt_id = _getmt(domainname)
+    drink_added = False
+    if request.method == 'GET':
+        obj = Basket.objects.filter(folg_id=folg_id, mt_id=mt_id, nugget__nuggetcat__cat_id=12)
+        if obj:
+            drink_added = True
+        return Response(drink_added)
+
+
+"""get status of given folg"""
+
+
+@api_view(['GET'])
+def folg_status(request, domainname, folg_id):
+    mt_id = _getmt(domainname)
+    if request.method == 'GET':
+        folg_obj = Folg.objects.values('pair__namevorname', 'pair__strassenr', 'lastchanged').get(pk=folg_id, mt_id=mt_id)
+        tzinfo = pytz.timezone('Europe/Berlin')
+        order_time = folg_obj.get('lastchanged').astimezone(tz=tzinfo)
+        count_bas = Basket.objects.filter(mt_id=mt_id, folg_id=folg_id, addonflag=False).count()
+        # replace microsecond to get SS:SS:SS format in UI
+        order_time = order_time.replace(microsecond=0)
+        folg_obj['lastchangedTime'] = order_time.time()
+        folg_obj['lastchangedDate'] = order_time.date()
+        folg_obj['basketCount'] = count_bas
+        return Response(folg_obj)
+
 
 
 def create_addon_list(add_list):
