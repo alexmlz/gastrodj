@@ -480,8 +480,8 @@ def folg_list(request, domainname):
         pair_info['mt_id'] = mt_id
         new_pair = Pair.objects.create(**pair_info)
         folg.pair = new_pair
-        # TODO check if completed is the right status
-        folg.status_id = 3
+        # status is initial on order creation
+        folg.status_id = 1
         folg.method_id = method_id
         folg.save()
         return Response(status=status.HTTP_201_CREATED)
@@ -561,8 +561,12 @@ def check_drink(request, domainname, folg_id):
 @api_view(['GET'])
 def folg_status(request, domainname, folg_id):
     mt_id = _getmt(domainname)
+    status_text = 'Danke für deine Bestellung'
+    status_color_class = 'status__message'
+    status_bg_class = 'status__overall__content'
     if request.method == 'GET':
-        folg_obj = Folg.objects.values('pair__namevorname', 'pair__strassenr', 'lastchanged').get(pk=folg_id, mt_id=mt_id)
+        folg_obj = Folg.objects.values('pair__namevorname', 'pair__strassenr', 'lastchanged', 'status_id')\
+            .get(pk=folg_id, mt_id=mt_id)
         tzinfo = pytz.timezone('Europe/Berlin')
         order_time = folg_obj.get('lastchanged').astimezone(tz=tzinfo)
         count_bas = Basket.objects.filter(mt_id=mt_id, folg_id=folg_id, addonflag=False).count()
@@ -571,6 +575,21 @@ def folg_status(request, domainname, folg_id):
         folg_obj['lastchangedTime'] = order_time.time()
         folg_obj['lastchangedDate'] = order_time.date()
         folg_obj['basketCount'] = count_bas
+        if folg_obj.get('status_id') == 2:
+            status_text = 'Deine Bestellung ist bestätigt'
+            status_color_class = 'status__message__green'
+            status_bg_class = 'status__overall__content__green'
+        elif folg_obj.get('status_id') == 3:
+            status_text = 'Deine Bestellung wird zubereitet'
+            status_color_class = 'status__message__blue'
+            status_bg_class = 'status__overall__content__yellow'
+        elif folg_obj.get('status_id') == 4:
+            status_text = 'Deine Bestellung ist fertig'
+            status_color_class = 'status__message__redshade'
+            status_bg_class = 'status__overall__content__blue'
+        folg_obj['statusText'] = status_text
+        folg_obj['statusTextClass'] = status_color_class
+        folg_obj['statusTextContentClass'] = status_bg_class
         return Response(folg_obj)
 
 
