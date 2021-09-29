@@ -424,13 +424,14 @@ def folg_list(request, domainname):
     mt_id = _getmt(domainname)
     if request.method == 'GET':
         folg_details = Basket.objects.filter(mt_id=mt_id, addonflag=False)\
-            .values('folg__pk', 'folg__lastchanged', 'folg__status_id', 'folg__status__description')\
+            .values('folg__pk', 'folg__lastchanged', 'folg__status_id', 'folg__status__description',
+                    'folg__pair__namevorname', 'folg__pair__strassenr', 'folg__pair__plzstadt',
+                    'folg__pair__email', 'folg__pair__telefonnr', 'folg__method__description')\
             .annotate(folg_sum=Sum('value')).order_by('-folg__lastchanged')
         return Response(folg_details)
         # folg_list_query = Folg.objects.filter(mt_id=mt_id)
         # serializer = FolgSerializer(folg_list_query, context={'request': request}, many=True)
         # return Response(serializer.data)
-
     elif request.method == 'POST':
         group_id = 1
         data = request.data
@@ -490,6 +491,16 @@ def folg_list(request, domainname):
         folg.method_id = method_id
         folg.save()
         return Response(status=status.HTTP_201_CREATED)
+
+
+@api_view(['DELETE'])
+def delete_folg(request, domainname, folg_id):
+    mt_id = _getmt(domainname)
+    if request.method == 'DELETE':
+        # TODO implement on delete cascase on every folg_id
+        deleted_basket = Basket.objects.filter(folg_id=folg_id).delete()
+        deleted_folg = Folg.objects.filter(pk=folg_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])
