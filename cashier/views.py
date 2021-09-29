@@ -423,9 +423,14 @@ def basket_details(request, domainname, folg_id):
 def folg_list(request, domainname):
     mt_id = _getmt(domainname)
     if request.method == 'GET':
-        folg_list_query = Folg.objects.filter(mt_id=mt_id)
-        serializer = FolgSerializer(folg_list_query, context={'request': request}, many=True)
-        return Response(serializer.data)
+        folg_details = Basket.objects.filter(mt_id=mt_id, addonflag=False)\
+            .values('folg__pk', 'folg__lastchanged', 'folg__status_id', 'folg__status__description')\
+            .annotate(folg_sum=Sum('value')).order_by('-folg__lastchanged')
+        return Response(folg_details)
+        # folg_list_query = Folg.objects.filter(mt_id=mt_id)
+        # serializer = FolgSerializer(folg_list_query, context={'request': request}, many=True)
+        # return Response(serializer.data)
+
     elif request.method == 'POST':
         group_id = 1
         data = request.data
@@ -558,7 +563,7 @@ def check_drink(request, domainname, folg_id):
 """get status of given folg"""
 
 
-@api_view(['GET'])
+@api_view(['GET', 'PUT'])
 def folg_status(request, domainname, folg_id):
     mt_id = _getmt(domainname)
     status_text = 'Danke für deine Bestellung'
@@ -591,7 +596,21 @@ def folg_status(request, domainname, folg_id):
         folg_obj['statusTextClass'] = status_color_class
         folg_obj['statusTextContentClass'] = status_bg_class
         return Response(folg_obj)
+    elif request.method == 'PUT':
+        data = request.data
+        new_status = data.get('newStatus')
+        if folg_id:
+            updated_folg = Folg.objects.filter(pk=folg_id, mt_id=mt_id).update(status_id=new_status)
+            return Response(True)
 
+
+@api_view(['GET'])
+def get_statis(request, domainname):
+    mt_id = _getmt(domainname)
+    # TODO implement mt_it to status sothat every mt has its own statis
+    if request.method == 'GET':
+        statis = Status.objects.values()
+        return Response(statis)
 
 
 def create_addon_list(add_list):

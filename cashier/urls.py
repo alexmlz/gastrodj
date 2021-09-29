@@ -21,5 +21,6 @@ urlpatterns = [
     path('<domainname>/option/<int:basket_id>/', views.add_option, name='add_option'),
     path('<domainname>/checkDrink/<int:folg_id>/', views.check_drink, name='check_drink'),
     path('<domainname>/folgStatus/<int:folg_id>/', views.folg_status, name='folg_status'),
+    path('<domainname>/getStatis/', views.get_statis, name='get_statis'),
 
 ]
