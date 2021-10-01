@@ -253,14 +253,14 @@ def basket_addon_edit(request, domainname, basket_id):
 """get details for a given basketId"""
 
 
-@api_view(['GET'])
-def basket_single_detail(request, domainname, basketId):
+@api_view(['GET', 'DELETE'])
+def basket_single_detail(request, domainname, basket_id):
     mt_id = _getmt(domainname)
     if request.method == 'GET':
         basket_single = Basket.objects.values(
             'id', 'description', 'note', 'nugget_id', 'einzelpreis', 'menge', 'value', 'einheit', 'group', 'addonCount',
             'addonflag', 'folg_id', 'lastchanged', 'mt_id', 'nugget__pic_url', 'nugget__nuggetcat__cat_id'
-        ).get(pk=basketId, mt_id=mt_id)
+        ).get(pk=basket_id, mt_id=mt_id)
         add_str = ""
         value_sum = 0
         addon_query = Basket.objects.values('nugget__description', 'menge', 'value') \
@@ -282,6 +282,9 @@ def basket_single_detail(request, domainname, basketId):
         # serializer = BasketSerializer(basket_single, context={'request': request}, many=False)
         # return Response(serializer.data)
         return Response(basket_single, status=status.HTTP_200_OK)
+    elif request.method == 'DELETE':
+        del_basket = Basket.objects.filter(pk=basket_id).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET', 'POST'])
