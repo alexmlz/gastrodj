@@ -431,7 +431,8 @@ def folg_list(request, domainname):
                     'folg__pair__namevorname', 'folg__pair__strassenr', 'folg__pair__plzstadt',
                     'folg__pair__email', 'folg__pair__telefonnr', 'folg__method__description')\
             .annotate(folg_sum=Sum('value')).order_by('-folg__lastchanged')
-        return Response(folg_details)
+        folg_count = Folg.objects.filter(mt_id=mt_id, status_id=2).count()
+        return Response({'orders': folg_details, 'active_count': folg_count})
         # folg_list_query = Folg.objects.filter(mt_id=mt_id)
         # serializer = FolgSerializer(folg_list_query, context={'request': request}, many=True)
         # return Response(serializer.data)
@@ -490,7 +491,7 @@ def folg_list(request, domainname):
         new_pair = Pair.objects.create(**pair_info)
         folg.pair = new_pair
         # status is initial on order creation
-        folg.status_id = 1
+        folg.status_id = 2
         folg.method_id = method_id
         folg.save()
         return Response(status=status.HTTP_201_CREATED)
