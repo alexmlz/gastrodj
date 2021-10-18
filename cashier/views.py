@@ -312,7 +312,6 @@ def basket_pdf(request, domainname, folg_id):
             latex_output += r"\section*{"+bask["description"]+"}\n"
             latex_output += f"{bask['addonString']}\n"
         latex_output+= """\end{document}"""
-        # print(latex_output)
         # Create orders folder if still not exists.
         if not os.path.exists("orders/"):
             os.mkdir("orders")
@@ -327,7 +326,6 @@ def basket_pdf(request, domainname, folg_id):
             capture_output=False,
         )
         os.chdir("../")
-        # print(pdf_run)
 
     mt_id = _getmt(domainname)
     try:
@@ -336,11 +334,7 @@ def basket_pdf(request, domainname, folg_id):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     # Check if pdf already created
-    print("YOYOY")
-    print(os.path.exists("orders"))
-    print(os.path.exists(f"orders/{folg_id}.pdf"))
     if os.path.exists(f"orders/{folg_id}.pdf"):
-        print("HELLO")
         return FileResponse(
             open(f'orders/{folg_id}.pdf', 'rb'),
             content_type='application/pdf',
@@ -613,8 +607,8 @@ def folg_total(request, domainname, folg_id):
         return Response(sum_folg.get('value_sum'))
 
 
-"""the following will update the basket with option, teig or rand there can pnly be one of the named at atime 
-in one folg basket. thats why the other entry will be deleted if exist after that the new 
+"""the following will update the basket with option, teig or rand there can pnly be one of the named at atime
+in one folg basket. thats why the other entry will be deleted if exist after that the new
 (passed on will be created)"""
 
 
