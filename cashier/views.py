@@ -12,6 +12,8 @@ from decimal import Decimal
 from django.db.models import Count, Avg, Sum
 from django.db.models import Q, F
 import pytz
+import os
+import subprocess
 
 # Create your views here.
 
@@ -298,6 +300,93 @@ def basket_list(request, domainname):
         data = request.data
         data['mt'] = mt_id
         basket = Basket(**data)
+
+@api_view(['GET'])
+def basket_pdf(request, domainname, folg_id):
+    def create_pdf(baskets):
+        latex_output = r"""\documentclass{article}
+\usepackage[paperheight=109mm, paperwidth=76mm, margin=5mm]{geometry}
+\begin{document}
+"""
+        for bask in baskets:
+            latex_output += r"\section*{"+bask["description"]+"}\n"
+            latex_output += f"{bask['addonString']}\n"
+        latex_output+= """\end{document}"""
+        # print(latex_output)
+        # Create orders folder if still not exists.
+        if not os.path.exists("orders/"):
+            os.mkdir("orders")
+        # Create the latex file
+        with open(f"orders/{folg_id}.tex", "w") as f:
+            f.write(latex_output)
+
+        os.chdir("orders")
+        pdf_run = subprocess.run(
+            ["xelatex", f"{folg_id}.tex"],
+            stderr=True,
+            capture_output=False,
+        )
+        os.chdir("../")
+        # print(pdf_run)
+
+    mt_id = _getmt(domainname)
+    try:
+        folg = Folg.objects.get(pk=folg_id)
+    except Folg.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
+
+    # Check if pdf already created
+    print("YOYOY")
+    print(os.path.exists("orders"))
+    print(os.path.exists(f"orders/{folg_id}.pdf"))
+    if os.path.exists(f"orders/{folg_id}.pdf"):
+        print("HELLO")
+        return FileResponse(
+            open(f'orders/{folg_id}.pdf', 'rb'),
+            content_type='application/pdf',
+        )
+
+    # get a list of all addons as a string to display in table for each basket
+    baskets = Basket.objects.values('pk',
+                                    'description',
+                                    'nugget_id',
+                                    'menge',
+                                    'value',
+                                    'group',
+                                    'note',
+                                    'nugget__pic_url',
+                                    'nugget__nuggetcat__cat_id')\
+        .filter(folg_id=folg_id, addonflag=False).order_by('pk')
+    for bask in baskets:
+        add_str = ""
+        addon_query = Basket.objects.values(
+            'nugget__description',
+            'menge'
+        ) .filter(folg_id=folg_id, group=bask.get('group'), addonflag=True)
+        if addon_query:
+            addon_loop_list = list(addon_query)
+            for index, add in enumerate(addon_loop_list):
+                if int(add.get('menge')) > 1:
+                    extra_str = (
+                        str(int(add.get('menge'))) +
+                        '×' +
+                        add.get('nugget__description')
+                    )
+                else:
+                    extra_str = add.get('nugget__description')
+                if index == len(addon_loop_list) - 1:
+                    add_str += extra_str
+                else:
+                    add_str += extra_str + ', '
+        bask['addonString'] = add_str
+    create_pdf(baskets)
+    try:
+        return FileResponse(
+            open(f'orders/{folg_id}.pdf', 'rb'),
+            content_type='application/pdf'
+        )
+    except FileNotFoundError:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 @api_view(['GET', 'POST', 'PUT', 'DELETE'])

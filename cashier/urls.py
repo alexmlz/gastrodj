@@ -14,6 +14,7 @@ urlpatterns = [
     path('<domainname>/basketsingle/<int:basket_id>/', views.basket_single_detail, name='basket_single_detail'),
     path('<domainname>/baskets/', views.basket_list, name='basket_list'),
     path('<domainname>/baskets/<int:folg_id>/', views.basket_details, name='basket_details'),
+    path('<domainname>/basket_pdf/<int:folg_id>/', views.basket_pdf, name='basket_pdf'),
     path('<domainname>/editbasket/<int:basket_id>/', views.basket_addon_edit, name='basket_addon_edit'),
     path('<domainname>/folg/', views.folg_list, name='folg_list'),
     path('<domainname>/deletefolg/<int:folg_id>/', views.delete_folg, name='delete_folg'),
