@@ -48,7 +48,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'mod_wsgi.server',
     'cashier',
-    'asys'
+    'asys',
     'mod_wsgi.server',
     'cashier'
 ]
