@@ -46,9 +46,11 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    #'mod_wsgi.server',
+    'mod_wsgi.server',
     'cashier',
     'asys'
+    'mod_wsgi.server',
+    'cashier'
 ]
 
 MIDDLEWARE = [
@@ -95,7 +97,6 @@ DATABASES = {
         'PASSWORD': 'goethehausffm',
         'HOST': '127.0.0.1',
         'PORT': '5432',
-        
     }
 }
 
