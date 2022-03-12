@@ -31,6 +31,14 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.strato.de'
+EMAIL_HOST_USER = 'karima@kariconcept.de'
+EMAIL_HOST_PASSWORD = '*UnwdEz58!z?'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+DEFAULT_FROM_EMAIL = 'default from email'
+
 CORS_ORIGIN_ALLOW_ALL = True
 
 

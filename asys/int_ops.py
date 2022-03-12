@@ -3,6 +3,7 @@ from .models import Asys, AiSysDate, Atermin
 import pytz
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.mail import send_mail
 
 
 today = date.today()
@@ -190,6 +191,25 @@ def bookappointment(inputs, asys_id):
         asys = Asys.objects.get(id=asys_id)
         asys.status = 'booked'
         asys.save()
+        aidate = AiSysDate.objects.get(asys_id=asys_id)
+        send_mail(
+            'Buchungsbestätigung',
+            f"Hiermit bestätigen wir den "
+            f"nafolgenden Termin von {new_atermin['name']} "
+            f"email: {new_atermin['email']} "
+            f"telefon: {new_atermin['telefon']} "
+            f"für {new_atermin['thema_item']} am"
+            f" {aidate.d_beginn_tmsp}.",
+            f" bei Fragen oder stonierung antworten "
+            f"Sie einfach auf diese mail",
+            f"Vielen Dank.",
+            f"Mit freundlichen Grüßen, ",
+            f"Ihr Kari Concept Team ",
+            'info@kariconcept.de',
+            [new_atermin['email'], 'info@kariconcept.de'],
+            fail_silently=False,
+        )
+
     return 'updated'
 
 

@@ -6,13 +6,13 @@ from django.contrib.auth.models import User
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authentication import TokenAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from .int_ops import createappointment, getappointments, deleteAppointment, bookappointment
 
 
 class UserCreate(APIView):
     """Creates the user."""
-    def post(self, request, format='json'):
+    def post(self, request, domainname, format='json'):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -25,7 +25,7 @@ class UserCreate(APIView):
 
 
 class CustomAuthToken(ObtainAuthToken):
-    def post(self, request, *args, **kwargs):
+    def post(self, request, domainname, *args, **kwargs):
         serializer = self.serializer_class(
             data=request.data,
             context={'request': request}
@@ -44,7 +44,7 @@ class ExampleView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request, format=None):
+    def get(self, request, domainname, format=None):
         content = {
             'user': str(request.user),  # `django.contrib.auth.User` instance.
             'auth': str(request.auth),  # None
