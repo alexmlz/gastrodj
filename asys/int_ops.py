@@ -194,17 +194,8 @@ def bookappointment(inputs, asys_id):
         aidate = AiSysDate.objects.get(asys_id=asys_id)
         send_mail(
             'Buchungsbestätigung',
-            f"Hiermit bestätigen wir den "
-            f"nafolgenden Termin von {new_atermin['name']} "
-            f"email: {new_atermin['email']} "
-            f"telefon: {new_atermin['telefon']} "
-            f"für {new_atermin['thema_item']} am"
+            f"Hiermit bestätigen wir den nafolgenden Termin von {new_atermin['name']} für {new_atermin['thema_item']} "
             f" {aidate.d_beginn_tmsp}.",
-            f" bei Fragen oder stonierung antworten "
-            f"Sie einfach auf diese mail",
-            f"Vielen Dank.",
-            f"Mit freundlichen Grüßen, ",
-            f"Ihr Kari Concept Team ",
             'info@kariconcept.de',
             [new_atermin['email'], 'info@kariconcept.de'],
             fail_silently=False,
