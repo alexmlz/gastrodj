@@ -97,8 +97,10 @@ def createaisysdate(single_date):
     beginn_day = single_date.day
     beginn_month = single_date.month
     beginn_year = single_date.year
-    single_date_tmsp_beginn = datetime(beginn_year, beginn_month, beginn_day, start_hour, minutes, seconds, mm, pytz.UTC)
-    single_date_tmsp_end = datetime(beginn_year, beginn_month, beginn_day, end_hour, minutes, seconds, mm, pytz.UTC)
+    single_date_tmsp_beginn = datetime(beginn_year, beginn_month, beginn_day, start_hour,
+                                       minutes, seconds, mm, pytz.UTC)
+    single_date_tmsp_end = datetime(beginn_year, beginn_month, beginn_day, end_hour,
+                                    minutes, seconds, mm, pytz.UTC)
     weekday = single_date.weekday()
     aisysdate_obj = {
                      'zeitraum': 'zeitraum',
@@ -166,7 +168,7 @@ def getappointments(agent_id, public):
     return data_for_return
 
 
-def deleteAppointment(asys_id, aidate_id):
+def deleteappointment(asys_id, aidate_id):
     atermin_data = Atermin.objects.get(asys_id=asys_id)
     a_name = atermin_data.name
     if a_name:

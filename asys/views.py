@@ -7,7 +7,8 @@ from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
-from .int_ops import createappointment, getappointments, deleteAppointment, bookappointment
+from .int_ops import createappointment, getappointments, deleteappointment, bookappointment
+from django.contrib.auth import authenticate, login
 
 
 class UserCreate(APIView):
@@ -57,13 +58,15 @@ class AppointmentsView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, domainname, fromat=None):
-        if domainname == 'localhost' or domainname == 'kariconcept.de':
+        if domainname == 'localhost' or domainname == 'kariconcept.de' \
+                or domainname == 'www.kariconcept.de':
             agentid = 1
         return_data = getappointments(agentid, False)
         return Response(return_data)
 
     def post(self, request, domainname, *args, **kwargs):
-        if domainname == 'localhost' or domainname == 'kariconcept.de':
+        if domainname == 'localhost' or domainname == 'kariconcept.de' \
+                or domainname == 'www.kariconcept.de':
             agentid = 1
         data = request.data
         appointment_cre_data = AppoinmentCreSerializer(data=data)
@@ -79,12 +82,13 @@ class AppointmentsView(APIView):
             return Response('invalid')
 
     def delete(self, request, domainname):
-        if domainname == 'localhost' or domainname == 'kariconcept.de':
+        if domainname == 'localhost' or domainname == 'kariconcept.de' \
+                or domainname == 'www.kariconcept.de':
             agentid = 1
         data = request.data
         asys_id = data.get('asys_id')
         aidate_id = data.get('id')
-        return_message = deleteAppointment(asys_id, aidate_id)
+        return_message = deleteappointment(asys_id, aidate_id)
         if return_message == 'deleted':
             return_data = getappointments(agentid, False)
             return Response(return_data)
@@ -93,19 +97,22 @@ class AppointmentsView(APIView):
 
 class AppointmentsPublicView(APIView):
     def get(self, request, domainname, fromat=None):
-        if domainname == 'localhost' or domainname == 'kariconcept.de':
+        if domainname == 'localhost' or domainname == 'kariconcept.de' \
+                or domainname == 'www.kariconcept.de':
             agentid = 1
         return_data = getappointments(agentid, True)
         return Response(return_data)
 
     def put(self, request, domainname, *args, **kwargs):
-        if domainname == 'localhost' or domainname == 'kariconcept.de':
+        if domainname == 'localhost' or domainname == 'kariconcept.de' \
+                or domainname == 'www.kariconcept.de':
             agentid = 1
         data = request.data
         inputs = data.get('inputs')
         asys_id = data.get('asys_id')
         bookappointment(inputs, asys_id)
         return Response(True)
+
 
 
 
