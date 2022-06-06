@@ -94,7 +94,18 @@ class PaymentDetail(models.Model):
 class Paypal(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
     paymentdetail = models.ForeignKey(PaymentDetail, on_delete=models.PROTECT, null=True)
+    given_name = models.CharField(max_length=20, blank=True, null=True)
+    surname = models.CharField(max_length=20, blank=True, null=True)
+    payer_id = models.CharField(max_length=20, blank=True, null=True)
+    email_address = models.CharField(max_length=40, blank=True, null=True)
+    address_line_1 = models.CharField(max_length=100, blank=True, null=True)
+    postal_code = models.CharField(max_length=10, blank=True, null=True)
+    country_code = models.CharField(max_length=2, blank=True, null=True)
+    admin_area_1 = models.CharField(max_length=50, blank=True, null=True)
+    create_time = models.DateTimeField(null=True)
+    update_time = models.DateTimeField(null=True)
     lastchanged = models.DateTimeField(auto_now=True)
+    status = models.CharField(max_length=25, blank=True, null=True)
     mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
 
     class Meta:
@@ -170,6 +181,7 @@ class Folg(models.Model):
     status = models.ForeignKey(Status, on_delete=models.PROTECT, null=True)
     method = models.ForeignKey(Method, on_delete=models.PROTECT, null=True)
     paymentdetails = models.ForeignKey(PaymentDetail, on_delete=models.PROTECT, null=True)
+    paypaldetails = models.ForeignKey(Paypal, on_delete=models.PROTECT, null=True)
     lastchanged = models.DateTimeField(auto_now=True)
     counter = models.IntegerField(null=True)
     mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)

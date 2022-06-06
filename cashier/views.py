@@ -569,10 +569,39 @@ def folg_list(request, domainname):
             return Response(status=status.HTTP_404_NOT_FOUND)
         method_id = data.get('methodId')
         pair_info = data.get('details')
-        paymentInfo = data.get('paymentinfo')
+        paypal = data.get('paypal')
+        # PayPal Info
+        # paymentInfo = data.get('paymentinfo')
+        if method_id == 2:
+            folg_paypal = folg.paypaldetails
+            if folg_paypal is None:
+                folg_paypal = Paypal()
+            folg_paypal.given_name = paypal['payer'].get('name').get('given_name')
+            folg_paypal.surname = paypal['payer'].get('name').get('surname')
+            folg_paypal.address_line_1 = paypal['payer'].get('address').get('address_line_1')
+            folg_paypal.admin_area_1 = paypal['payer'].get('address').get('admin_area_1')
+            folg_paypal.postal_code = paypal['payer'].get('address').get('postal_code')
+            folg_paypal.country_code = paypal['payer'].get('address').get('country_code')
+            folg_paypal.status = paypal.get('status')
+            folg_paypal.create_time = paypal.get('create_time')
+            folg_paypal.update_time = paypal.get('update_time')
+            folg_paypal.payer_id = paypal.get('payer_id')
+            folg_paypal.email_address = paypal.get('email_address')
+            folg_paypal.save()
+            folg.paypaldetails = folg_paypal
         pair_info['mt_id'] = mt_id
-        new_pair = Pair.objects.create(**pair_info)
-        folg.pair = new_pair
+        folg_pair = folg.pair
+        if folg_pair:
+            folg_pair.namevorname = pair_info.get('namevorname')
+            folg_pair.strassenr = pair_info.get('strassenr')
+            folg_pair.plzstadt = pair_info.get('plzstadt')
+            folg_pair.telefonnr = pair_info.get('telefonnr')
+            folg_pair.email = pair_info.get('email')
+            folg_pair.addzusatz = pair_info.get('addzusatz')
+            folg_pair.save()
+        else:
+            new_pair = Pair.objects.create(**pair_info)
+            folg.pair = new_pair
         # status is initial on order creation
         folg.status_id = 2
         folg.method_id = method_id

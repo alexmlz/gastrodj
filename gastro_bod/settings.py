@@ -23,7 +23,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 's+bm1bf2d4&+x)yw2l5zwlz78yx8b3ky%p04haao)8+dg^dwj7'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = [
     '172.17.12.10',
@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'mod_wsgi.server',
+    #'mod_wsgi.server',
     'cashier',
     'asys'
 ]
