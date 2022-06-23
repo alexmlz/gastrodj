@@ -3,7 +3,13 @@ from django.http import HttpResponse, JsonResponse, FileResponse
 # from rest_framework.decorators import api_view
 # from rest_framework.parsers import JSONParser
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import (
+    api_view,
+    authentication_classes,
+    permission_classes,
+)
+from rest_framework.authentication import TokenAuthentication
+from rest_framework.permissions import IsAuthenticated
 # from django.views.decorators.csrf import csrf_exempt
 from .models import *
 from .serializers import *
@@ -18,7 +24,8 @@ import subprocess
 # Create your views here.
 
 
-@api_view(['GET', 'POST'])
+@api_view(['GET', 'POST', 'DELETE'])
+@authentication_classes([TokenAuthentication])
 def product_list(request, domainname):
     mt_id = _getmt(domainname)
     if request.method == 'GET':
@@ -37,6 +44,7 @@ def product_list(request, domainname):
 
 
 @api_view(['PUT', 'DELETE'])
+@authentication_classes([TokenAuthentication])
 def product_detail(request, product_id, domainname):
     # product is zweckentfremded für nuggets
     # here we dont need a domain becuase the usere only recieves his own maybe implement for addational security a check
