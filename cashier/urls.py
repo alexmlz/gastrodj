@@ -1,6 +1,7 @@
 from django.urls import include, path
 
 from . import views
+from . import usersviews
 
 urlpatterns = [
     path('<domainname>/products/', views.product_list, name='product_list'),
@@ -24,5 +25,6 @@ urlpatterns = [
     path('<domainname>/checkDrink/<int:folg_id>/', views.check_drink, name='check_drink'),
     path('<domainname>/folgStatus/<int:folg_id>/', views.folg_status, name='folg_status'),
     path('<domainname>/getStatis/', views.get_statis, name='get_statis'),
+    path('users/login/', usersviews.CustomAuthToken.as_view(), name='account-login'),
 
 ]
