@@ -11,12 +11,18 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ('pk', 'description')
 
 
+class PostSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Post
+        fields = '__all__'
+
+
 class NuggetSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Nugget
         fields = ('pk', 'description', 'description_long', 'pic_url', 'addonflag', 'description_long', 'active',
-                  'einzelpreis', 'einheit', 'menge', 'mt', 'optioncat')
+                  'einzelpreis', 'einheit', 'menge', 'mt', 'optioncat', 'post')
 
 
 class CatSerializer(serializers.ModelSerializer):

@@ -20,6 +20,8 @@ from django.db.models import Q, F
 import pytz
 import os
 import subprocess
+from rest_framework.views import APIView
+from rest_framework.parsers import MultiPartParser, FormParser
 
 # Create your views here.
 
@@ -97,9 +99,15 @@ def cat_list(request, domainname):
 def nugget_list(request, domainname):
     mt_id = _getmt(domainname)
     if request.method == 'GET':
-        nu_list = Nugget.objects.filter(active=True, mt_id=mt_id, addonflag=False)
-        serializer = NuggetSerializer(nu_list, context={'request': request}, many=True)
-        return Response(serializer.data)
+        # "pk":62,"description":"test","description_long":"Test Test","pic_url":null,
+        # "addonflag":false,"active":true,"einzelpreis":"0.99000","einheit":null,"menge":null,"mt":4,
+        # "optioncat":null,"post":12}
+        nu_list = Nugget.objects.filter(active=True, mt_id=mt_id, addonflag=False)\
+            .values('pk', 'description', 'description_long', 'pic_url', 'addonflag', 'active',
+                    'einzelpreis', 'einheit', 'menge', 'mt', 'optioncat', 'post', 'post__image')
+
+        # serializer = NuggetSerializer(nu_list, context={'request': request}, many=True)
+        return Response(list(nu_list))
         # return JsonResponse(list(product_list), safe=False)
     elif request.method == 'POST':
         # implement filtering
@@ -746,6 +754,60 @@ def get_statis(request, domainname):
     if request.method == 'GET':
         statis = Status.objects.values()
         return Response(statis)
+
+
+class PostView(APIView):
+    parser_classes = (MultiPartParser, FormParser)
+
+    def get(self, request, domainname, *args, **kwargs):
+        mt_id = _getmt(domainname)
+        posts = Post.objects.all()
+        serializer = PostSerializer(posts, many=True)
+        return Response(serializer.data)
+
+    def post(self, request, domainname, *args, **kwargs):
+        mt_id = _getmt(domainname)
+        data = request.data
+        posts_serializer = PostSerializer(data=data)
+        if posts_serializer.is_valid():
+            new_post = posts_serializer.save()
+            del data['image']
+            data['mt'] = mt_id
+            data['post'] = new_post.id
+            nugget_serializer = NuggetSerializer(data=data)
+            if nugget_serializer.is_valid():
+                new_nugget = nugget_serializer.save()
+            return Response(posts_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            print('error', posts_serializer.errors)
+            return Response(posts_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def put(self, request, domainname, *args, **kwargs):
+        mt_id = _getmt(domainname)
+        data = request.data
+        nugget_id = data.get('id')
+        nugget = Nugget.objects.get(id=nugget_id)
+        if nugget:
+            if data.get('image'):
+                post = Post.objects.get(id=nugget.post.id)
+                post.image = data.get('image')
+                post.save()
+                del data['image']
+            nugget.description = data.get('description')
+            nugget.description_long = data.get('description_long')
+            nugget_active = data.get('active')
+            if nugget_active == 'false':
+                nugget_active = False
+            else:
+                nugget_active = True
+            nugget.active = nugget_active
+            nugget.einzelpreis = data.get('einzelpreis')
+            nugget.save()
+            return Response(data, status=status.HTTP_201_CREATED)
+        else:
+            print('error')
+            return Response('error while updating', status=status.HTTP_400_BAD_REQUEST)
+
 
 
 def create_addon_list(add_list):

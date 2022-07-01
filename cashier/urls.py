@@ -26,5 +26,6 @@ urlpatterns = [
     path('<domainname>/folgStatus/<int:folg_id>/', views.folg_status, name='folg_status'),
     path('<domainname>/getStatis/', views.get_statis, name='get_statis'),
     path('users/login/', usersviews.CustomAuthToken.as_view(), name='account-login'),
+    path('<domainname>/posts/', views.PostView.as_view(), name= 'posts_list'),
 
 ]

@@ -144,6 +144,17 @@ class Cat(models.Model):
         db_table = 'cat'
 
 
+class Post(models.Model):
+    image = models.ImageField(upload_to='post_images')
+    description_long = models.CharField(max_length=200, blank=True, null=True)
+    description = models.CharField(max_length=100, blank=True, null=True)
+    einzelpreis = models.DecimalField(max_digits=20, decimal_places=5, blank=True, null=True)
+    active = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'post'
+
+
 class Nugget(models.Model):
     description = models.CharField(max_length=100, blank=True, null=True)
     menge = models.DecimalField(max_digits=20, decimal_places=5, blank=True, null=True)
@@ -158,6 +169,7 @@ class Nugget(models.Model):
     lastchanged = models.DateTimeField(auto_now=True)
     mt = models.ForeignKey(Mt, on_delete=models.PROTECT, null=True)
     optioncat = models.ForeignKey(OptionCat, on_delete=models.PROTECT, null=True)
+    post = models.ForeignKey(Post, on_delete=models.PROTECT, null=True)
 
     class Meta:
         db_table = 'nugget'
