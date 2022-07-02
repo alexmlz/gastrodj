@@ -788,11 +788,6 @@ class PostView(APIView):
         nugget_id = data.get('id')
         nugget = Nugget.objects.get(id=nugget_id)
         if nugget:
-            if data.get('image'):
-                post = Post.objects.get(id=nugget.post.id)
-                post.image = data.get('image')
-                post.save()
-                del data['image']
             nugget.description = data.get('description')
             nugget.description_long = data.get('description_long')
             nugget_active = data.get('active')
@@ -803,6 +798,20 @@ class PostView(APIView):
             nugget.active = nugget_active
             nugget.einzelpreis = data.get('einzelpreis')
             nugget.save()
+            if data.get('image'):
+                if nugget.post:
+                    post = Post.objects.get(id=nugget.post.id)
+                    post.image = data.get('image')
+                    post.save()
+                else:
+                    del data['id']
+                    posts_serializer = PostSerializer(data=data)
+                    if posts_serializer.is_valid():
+                        new_post = posts_serializer.save()
+                        nugget.post = new_post
+                        nugget.save()
+                del data['image']
+
             return Response(data, status=status.HTTP_201_CREATED)
         else:
             print('error')
