@@ -54,7 +54,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework.authtoken',
     'corsheaders',
-    'mod_wsgi.server',
+    #'mod_wsgi.server',
     'cashier',
     'asys'
 ]
