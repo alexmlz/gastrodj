@@ -1,8 +1,7 @@
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from django.contrib.auth.models import User
-from .models import AiSysDate
-
+from .models import AiSysDate, Athema
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -41,3 +40,13 @@ class AppoinmentCreSerializer(serializers.ModelSerializer):
     class Meta:
         model = AiSysDate
         fields = ('d_end_tmsp', 'd_beginn_tmsp')
+
+
+class AthemaSerializer(serializers.ModelSerializer):
+    thema_item = serializers.CharField()
+    content = serializers.CharField()
+
+    class Meta:
+        model = Athema
+        fields = ('thema_item', 'content')
+

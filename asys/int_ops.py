@@ -1,5 +1,5 @@
 from datetime import datetime, date, timedelta
-from .models import Asys, AiSysDate, Atermin
+from .models import Asys, AiSysDate, Atermin, UtaInt, Athema, User, Agent, Akommentar
 import pytz
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,7 +12,7 @@ today_month = today.month
 today_year = today.year
 
 
-def createasys(sys_cp_id, sys_mt_id, utaint_id):
+def createasys(sys_cp_id, sys_mt_id, utaint_id, mt_sender=None, mt_receiver=None):
     """create new asys entry in the db"""
     today = datetime.today()
     cur_month = today.month
@@ -26,6 +26,10 @@ def createasys(sys_cp_id, sys_mt_id, utaint_id):
         sys_period = 'q4'
     new_as = Asys(sys_cp_id=sys_cp_id, sys_mt_id=sys_mt_id,
                   period=sys_period, utaint_id=utaint_id, status='offen')
+    if mt_receiver:
+        new_as.mt_receiver_id = mt_receiver
+    if mt_sender:
+        new_as.mt_sender_id = mt_sender
     new_as.save()
     return new_as.id
 
@@ -206,5 +210,57 @@ def bookappointment(inputs, asys_id):
     return 'updated'
 
 
+def getutaint():
+    utaint = UtaInt.objects.all().values()
+    return utaint
 
+
+def getthemen(userid):
+    userdata = User.objects.get(id=userid)
+    issuperuser = userdata.is_superuser
+    if issuperuser:
+        themen = Athema.objects.all().values()
+    else:
+        # find the right field to filter
+        themen = Athema.objects.filter(asys__sys_cp=userid).values()
+    return themen
+
+
+def createathema(data, userid):
+    # create asys with related data
+    defult_agent = Agent.objects.get(person_id=userid, agent_type='default')
+    if defult_agent:
+        default_agent_id = defult_agent.id
+        new_asys_id = createasys(userid, default_agent_id, 3, default_agent_id)
+        data['asys_id'] = new_asys_id
+        new_thema = Athema.objects.create(**data)
+        return True, 'success'
+    return False, 'kein default agent'
+
+
+def getthemasingle(thema_id, userid):
+    # TODO check if user is allowed to se this thema
+    athema = Athema.objects.get(id=thema_id)
+    athema_dict = model_to_dict(athema)
+    kommentare = Akommentar.objects.filter(athema_id=thema_id).values()
+    athema_dict['kommentare'] = kommentare
+    return athema_dict
+
+
+def createthemakommentar(data, userid):
+    # create asys with related data
+    defult_agent = Agent.objects.get(person_id=userid, agent_type='default')
+    if defult_agent:
+        default_agent_id = defult_agent.id
+        new_asys_id = createasys(userid, default_agent_id, 3, default_agent_id)
+        data['asys_id'] = new_asys_id
+        new_thema = Akommentar.objects.create(**data)
+        return True, 'success'
+    return False, 'kein default agent'
+
+
+def getkommentare(thema_id, userid):
+    # TODO check if user is allowed to see kommentare related to this thema
+    data_to_return = Akommentar.objects.filter(athema_id=thema_id).values()
+    return data_to_return
 

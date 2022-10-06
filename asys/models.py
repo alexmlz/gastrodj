@@ -10,6 +10,7 @@ today_year = today.year
 
 # Create your models here.
 
+
 class UtaInt(models.Model):
     """unique list of internal documents"""
 
@@ -221,3 +222,38 @@ class AqAnda(models.Model):
 
     class Meta:
         db_table = 'a_qanda'
+
+
+class Athema(models.Model):
+    """thema"""
+
+    thema_item = models.CharField(max_length=100, blank=True, null=True)
+    sub_item = models.CharField(max_length=40, blank=True, null=True)
+    content = models.TextField(blank=True, null=True)
+    asys = models.ForeignKey(
+        Asys,
+        on_delete=models.PROTECT,
+        null=True
+    )
+
+    class Meta:
+        db_table = 'a_thema'
+
+
+class Akommentar(models.Model):
+    """thema kommentar"""
+
+    kommentar = models.TextField(blank=True, null=True)
+    athema = models.ForeignKey(
+        Athema,
+        on_delete=models.PROTECT,
+        null=True
+    )
+    asys = models.ForeignKey(
+        Asys,
+        on_delete=models.PROTECT,
+        null=True
+    )
+
+    class Meta:
+        db_table = 'a_kommentar'
