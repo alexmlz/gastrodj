@@ -10,4 +10,6 @@ urlpatterns = [
     path('<domainname>/utaint/', views.UtaIntView.as_view(), name='utaint'),
     path('<domainname>/thema/', views.ThemaView.as_view(), name='thema'),
     path('<domainname>/themasingle/<int:thema_id>/', views.ThemaSingleView.as_view(), name='themasingle'),
+    path('<domainname>/agent/', views.AgentView.as_view(), name='agent'),
+    path('<domainname>/checkuser/', views.CheckUserView.as_view(), name='checkuser'),
 ]

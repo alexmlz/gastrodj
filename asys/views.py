@@ -8,7 +8,7 @@ from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from .int_ops import createappointment, getappointments, deleteappointment, bookappointment, getutaint, getthemen, \
-    createathema, getthemasingle, createthemakommentar, getkommentare
+    createathema, getthemasingle, createthemakommentar, getkommentare, getagent, getuserstatus, createagent, deletethema
 from django.contrib.auth import authenticate, login
 
 
@@ -146,13 +146,15 @@ class ThemaView(APIView):
             agentid = 1
         new_data = dict()
         data = request.data
-        for da in data:
+        for da in data.get('inputs'):
             new_data[da.get('name')] = da.get('value')
         ser_data = AthemaSerializer(data=new_data)
+        agentid = data.get('agentid')
+        receiver = data.get('receiver')
         if ser_data.is_valid():
             userid = request.auth.user_id
             # let that magic happen date format is YYYY-MM-DD
-            created, return_message = createathema(new_data, userid)
+            created, return_message = createathema(new_data, userid, agentid, receiver)
             if created:
                 return_data = getthemen(userid)
             else:
@@ -205,6 +207,54 @@ class ThemaSingleView(APIView):
             return_data = return_message
         return Response(return_data)
 
+    def delete(self, request, domainname, thema_id):
+        if domainname == 'localhost' or domainname == 'stb-it.de' \
+                or domainname == 'www.stb-it.de':
+            agentid = 1
+        return_message = deletethema(thema_id)
+        if return_message == 'deleted':
+            userid = request.auth.user_id
+            return_data = getthemen(userid)
+            return Response(return_data)
+        return Response(return_message)
 
+
+class AgentView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, domainname, fromat=None):
+        if domainname == 'localhost' or domainname == 'stb-it.de' \
+                or domainname == 'www.stb-it.de':
+            agentid = 1
+        userid = request.auth.user_id
+        return_data = getagent(userid)
+        return Response(return_data)
+
+    def post(self, request, domainname, *args, **kwargs):
+        if domainname == 'localhost' or domainname == 'stb-it.de' \
+                or domainname == 'www.stb-it.de':
+            agentid = 1
+        data = request.data
+        # only one entry
+        for da in data:
+            description = da.get('value')
+        userid = request.auth.user_id
+        # let that magic happen date format is YYYY-MM-DD
+        return_data = createagent(description, userid)
+        return Response(return_data)
+
+
+class CheckUserView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, domainname, fromat=None):
+        if domainname == 'localhost' or domainname == 'stb-it.de' \
+                or domainname == 'www.stb-it.de':
+            agentid = 1
+        userid = request.auth.user_id
+        return_data = getuserstatus(userid)
+        return Response(return_data)
 
 

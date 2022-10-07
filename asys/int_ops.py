@@ -4,6 +4,7 @@ import pytz
 from django.forms.models import model_to_dict
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.mail import send_mail
+from django.db.models import Q
 
 
 today = date.today()
@@ -222,20 +223,16 @@ def getthemen(userid):
         themen = Athema.objects.all().values()
     else:
         # find the right field to filter
-        themen = Athema.objects.filter(asys__sys_cp=userid).values()
+        themen = Athema.objects.filter(Q(asys__sys_cp=userid) | Q(asys__mt_receiver__person_id=userid)).values()
     return themen
 
 
-def createathema(data, userid):
+def createathema(data, userid, agentid, receiverid):
     # create asys with related data
-    defult_agent = Agent.objects.get(person_id=userid, agent_type='default')
-    if defult_agent:
-        default_agent_id = defult_agent.id
-        new_asys_id = createasys(userid, default_agent_id, 3, default_agent_id)
-        data['asys_id'] = new_asys_id
-        new_thema = Athema.objects.create(**data)
-        return True, 'success'
-    return False, 'kein default agent'
+    new_asys_id = createasys(userid, agentid, 3, agentid, receiverid)
+    data['asys_id'] = new_asys_id
+    new_thema = Athema.objects.create(**data)
+    return True, 'success'
 
 
 def getthemasingle(thema_id, userid):
@@ -264,3 +261,38 @@ def getkommentare(thema_id, userid):
     data_to_return = Akommentar.objects.filter(athema_id=thema_id).values()
     return data_to_return
 
+
+def getagent(userid):
+    # check if suer us superuser
+    user_status = getuserstatus(userid)
+    # if superuser get all agents if not get only agents related to user
+    if user_status:
+        data_to_return = Agent.objects.filter(~Q(person_id=None)).values()
+    else:
+        data_to_return = Agent.objects.filter(person_id=userid).values()
+    return data_to_return
+
+
+def getuserstatus(userid):
+    userdata = User.objects.get(id=userid)
+    return userdata.is_superuser
+
+
+def createagent(newagentdescription, userid):
+    # create asys with related data
+    Agent.objects.create(person_id=userid, description=newagentdescription)
+    data = getagent(userid)
+    return data
+
+
+def deletethema(themaid):
+    # check if thema has comments
+    akommentare = Akommentar.objects.filter(athema_id=themaid)
+    if akommentare:
+        return 'Thema mit Kommentaren kann nicht gelöscht werden'
+    themadata = Athema.objects.get(id=themaid)
+    asys_id = themadata.asys_id
+    rowsaffected2 = Athema.objects.filter(id=themaid).delete()
+    rowsaffected = Asys.objects.filter(id=asys_id).delete()
+    if rowsaffected[0] + rowsaffected2[0] >= 2:
+        return 'deleted'
