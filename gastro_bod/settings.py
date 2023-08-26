@@ -56,7 +56,8 @@ INSTALLED_APPS = [
     'corsheaders',
     'mod_wsgi.server',
     'cashier',
-    'asys'
+    'asys',
+    'journapp'
 ]
 
 MIDDLEWARE = [

@@ -22,5 +22,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('cashier.urls')),
     path('users/', include('users.urls')),
+    path('newApi/', include('journapp.urls')),
     path('asys/', include('asys.urls'))
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
