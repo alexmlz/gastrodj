@@ -31,6 +31,16 @@ ALLOWED_HOSTS = [
     '127.0.0.1',
 ]
 
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173',
+
+]
+
+CSRF_TRUSTED_ORIGINS = ['http://www.localhost', 'http://www.127.0.0.1:5173', 'http://127.0.0.1:5173']
+
+CORS_ALLOW_CREDENTIALS = True
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.strato.de'
 EMAIL_HOST_USER = 'info@kariconcept.de'
@@ -39,7 +49,7 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'default from email'
 
-CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_ALLOW_ALL = True
 
 
 # Application definition
@@ -61,6 +71,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -109,8 +120,11 @@ DATABASES = {
 
 CORS_ORIGIN_WHITELIST = (
     'http://172.17.12.10',
-    'http://localhost'
-    'localhost'
+    'http://localhost',
+    'localhost',
+    'http://127.0.0.1',
+    '127.0.0.1'
+
 )
 
 
@@ -133,9 +147,15 @@ AUTH_PASSWORD_VALIDATORS = [
 ]
 
 REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework.authentication.TokenAuthentication',
-    )
+        'rest_framework.authentication.SessionAuthentication',
+    ),
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework.authentication.TokenAuthentication',
+    # ),
 }
 
 
