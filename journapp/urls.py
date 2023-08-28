@@ -4,7 +4,7 @@ from . import views
 
 urlpatterns = [
     path('<domainname>/journals/', views.journal_list, name='journal_list'),
-    path('<domainname>/journal/<int:journal_id>/', views.JournalSingleView.as_view(), name='journal'),
+    path('<domainname>/journal/<int:journal_id>/', views.journal, name='journal'),
     path('<domainname>/users/', views.UserCreate.as_view(), name='account-create'),
     path('<domainname>/login/', views.CustomAuthToken.as_view(), name='account-login'),
     path('<domainname>/logintest/', views.UserLogin.as_view(), name='login'),

@@ -130,13 +130,3 @@ def journal(request, domainname, journal_id):
             Journal.objects.filter(id=journal_id).update(**data)
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class JournalSingleView(APIView):
-    permission_classes(permissions.IsAuthenticated,)
-    authentication_classes = (SessionAuthentication, )
-
-    def get(self, request, domainname, journal_id, fromat=None):
-        journal = Journal.objects.get(id=journal_id)
-        serializer = JournalSerializer(journal, context={'request': request}, many=False)
-        return Response(serializer.data)
