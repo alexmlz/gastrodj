@@ -116,7 +116,7 @@ def journal(request, domainname, journal_id):
     authentication_classes = (SessionAuthentication, )
     if request.method == 'GET':
         journal = Journal.objects.get(id=journal_id)
-        return Response(model_to_dict(journal), status=status.HTTP_200_OK)
+        return Response(model_to_dict(journal))
     elif request.method == 'DELETE':
         journal = Journal.objects.filter(id=journal_id)
         journal.delete()
