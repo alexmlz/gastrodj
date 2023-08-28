@@ -109,12 +109,15 @@ def journal_list(request, domainname):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['PUT', 'DELETE'])
+@api_view(['GET','PUT', 'DELETE'])
 def journal(request, domainname, journal_id):
     # mt_id = _getmt(domainname)
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
-    if request.method == 'DELETE':
+    if request.method == 'GET':
+        journal = Journal.objects.get(id=journal_id)
+        return Response(model_to_dict(journal), status=status.HTTP_200_OK)
+    elif request.method == 'DELETE':
         journal = Journal.objects.filter(id=journal_id)
         journal.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
