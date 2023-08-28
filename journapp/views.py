@@ -117,7 +117,7 @@ def journal(request, domainname, journal_id):
     if request.method == 'GET':
         journal = Journal.objects.get(id=journal_id)
         serializer = JournalSerializer(journal, context={'request': request}, many=False)
-        return Response({'subject':'this is a test'})
+        return Response(serializer.data)
     elif request.method == 'DELETE':
         journal = Journal.objects.filter(id=journal_id)
         journal.delete()
@@ -130,3 +130,13 @@ def journal(request, domainname, journal_id):
             Journal.objects.filter(id=journal_id).update(**data)
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def journaltest(request, domainname, journal_id):
+    # mt_id = _getmt(domainname)
+    permission_classes(permissions.IsAuthenticated,)
+    authentication_classes = (SessionAuthentication, )
+    if request.method == 'GET':
+        journal = Journal.objects.get(id=journal_id)
+        serializer = JournalSerializer(journal, context={'request': request}, many=False)
+        return Response(serializer.data)
