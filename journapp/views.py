@@ -117,7 +117,7 @@ def journal(request, domainname, journal_id):
     if request.method == 'GET':
         journal = Journal.objects.get(id=journal_id)
         serializer = JournalSerializer(journal, context={'request': request}, many=False)
-        return Response(serializer.data)
+        return Response({'subject':'this is a test'})
     elif request.method == 'DELETE':
         journal = Journal.objects.filter(id=journal_id)
         journal.delete()
