@@ -23,7 +23,7 @@ from django.contrib.auth import get_user_model, login, logout
 class UserRegister(APIView):
     permission_classes = (permissions.AllowAny,)
 
-    def post(self, request, domainname):
+    def post(self, request ):
         serializer = UserRegisterSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.create(request.data)
@@ -36,7 +36,7 @@ class UserLogin(APIView):
     permission_classes = (permissions.AllowAny,)
     authentication_classes = (SessionAuthentication,)
 
-    def post(self, request, domainname):
+    def post(self, request):
         data = request.data
         serializer = UserLoginSerializer(data=data)
         if serializer.is_valid(raise_exception=True):
@@ -46,7 +46,7 @@ class UserLogin(APIView):
 
 
 class UserLogout(APIView):
-    def post(self, request, domainname):
+    def post(self, request ):
         logout(request)
         return Response(status=status.HTTP_200_OK)
 
@@ -54,14 +54,14 @@ class UserLogout(APIView):
 class UserView(APIView):
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
-    def get(self, request, domainname):
+    def get(self, request, ):
         serializer = UserSerializer1(request.user)
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
 
 
 class UserCreate(APIView):
     """Creates the user."""
-    def post(self, request, domainname, format='json'):
+    def post(self, request, format='json'):
         serializer = UserSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
@@ -74,7 +74,7 @@ class UserCreate(APIView):
 
 
 class CustomAuthToken(ObtainAuthToken):
-    def post(self, request, domainname, *args, **kwargs):
+    def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
             data=request.data,
             context={'request': request}
@@ -90,10 +90,10 @@ class CustomAuthToken(ObtainAuthToken):
 
 
 @api_view(['GET', 'POST', 'DELETE'])
-def journal_list(request, domainname):
+def journal_list(request ):
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
-    # mt_id = _getmt(domainname)
+    # mt_id = _getmt()
     if request.method == 'GET':
         journal_list = Journal.objects.all()
         serializer = JournalSerializer(journal_list, context={'request': request}, many=True)
@@ -110,8 +110,8 @@ def journal_list(request, domainname):
 
 
 @api_view(['GET', 'PUT', 'DELETE'])
-def journal(request, domainname, journal_id):
-    # mt_id = _getmt(domainname)
+def journal(request, journal_id):
+    # mt_id = _getmt()
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
     if request.method == 'GET':
