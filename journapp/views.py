@@ -46,7 +46,7 @@ class UserLogin(APIView):
 
 
 class UserLogout(APIView):
-    def post(self, request ):
+    def post(self, request, ):
         logout(request)
         return Response(status=status.HTTP_200_OK)
 
@@ -90,19 +90,23 @@ class CustomAuthToken(ObtainAuthToken):
 
 
 @api_view(['GET', 'POST', 'DELETE'])
-def journal_list(request ):
+def journal_list(request, ):
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
     # mt_id = _getmt()
+    user_id = request.user.id
     if request.method == 'GET':
-        journal_list = Journal.objects.all()
+        journal_list = Journal.objects.filter(user_id=user_id)
         serializer = JournalSerializer(journal_list, context={'request': request}, many=True)
         return Response(serializer.data)
         # return JsonResponse(list(product_list), safe=False)
     elif request.method == 'POST':
+        new_data = {}
         data = request.data
-        # data['mt'] = mt_id
-        serializer = JournalSerializer(data=data)
+        for da in data:
+            new_data[da] = data['subject']
+        new_data['user'] = user_id
+        serializer = JournalSerializer(data=new_data)
         if serializer.is_valid():
             new_journal = serializer.save()
             return Response(model_to_dict(new_journal), status=status.HTTP_201_CREATED)
@@ -114,19 +118,19 @@ def journal(request, journal_id):
     # mt_id = _getmt()
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
+    user_id = request.user.id
     if request.method == 'GET':
-        journal = Journal.objects.get(id=journal_id)
+        journal = Journal.objects.get(id=journal_id, user_id=user_id)
         serializer = JournalSerializer(journal, context={'request': request}, many=False)
         return Response(serializer.data)
     elif request.method == 'DELETE':
-        journal = Journal.objects.filter(id=journal_id)
+        journal = Journal.objects.filter(id=journal_id, user_id=user_id)
         journal.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
     elif request.method == 'PUT':
         data = request.data
-        # data['mt'] = mt_id
         serializer = JournalSerializer(data=data)
         if serializer.is_valid():
-            Journal.objects.filter(id=journal_id).update(**data)
+            Journal.objects.filter(id=journal_id, user_id=user_id).update(**data)
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
