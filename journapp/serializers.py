@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from django.contrib.auth.models import User
+# from django.contrib.auth.models import User
 from django.contrib.auth import get_user_model, authenticate
 from rest_framework.validators import UniqueValidator
-from django.core.exceptions import ValidationError
+# from django.core.exceptions import ValidationError
 UserModel = get_user_model()
 # from rest_framework.validators import UniqueValidator
 
@@ -30,7 +30,11 @@ class UserLoginSerializer(serializers.Serializer):
     def check_user(self, clean_data):
         user = authenticate(username=clean_data['username'], password=clean_data['password'])
         if not user:
-            raise ValidationError('user not found')
+            user_ex = User.objects.get(username=clean_data['username'])
+            if user_ex:
+                return 'invalid password'
+            else:
+                return 'user not found'
         return user
 
 
