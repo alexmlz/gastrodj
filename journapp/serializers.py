@@ -30,7 +30,7 @@ class UserLoginSerializer(serializers.Serializer):
     def check_user(self, clean_data):
         user = authenticate(username=clean_data['username'], password=clean_data['password'])
         if not user:
-            user_ex = User.objects.get(username=clean_data['username'])
+            user_ex = User.objects.filter(username=clean_data['username'])
             if user_ex:
                 return 'invalid password'
             else:
