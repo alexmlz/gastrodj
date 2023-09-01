@@ -107,7 +107,7 @@ def journal_list(request, ):
         new_data = {}
         data = request.data
         for da in data:
-            new_data[da] = data['subject']
+            new_data[da] = data[da]
         new_data['user'] = user_id
         serializer = JournalSerializer(data=new_data)
         if serializer.is_valid():
