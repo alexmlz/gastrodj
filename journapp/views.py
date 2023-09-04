@@ -57,9 +57,23 @@ class UserLogout(APIView):
 class UserView(APIView):
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
+
     def get(self, request, ):
         serializer = UserSerializer1(request.user)
         return Response({'user': serializer.data}, status=status.HTTP_200_OK)
+
+
+class UsersView(APIView):
+    permission_classes(permissions.IsAuthenticated,)
+    authentication_classes = (SessionAuthentication, )
+
+    def get(self, request, ):
+        # serializer = UserSerializer1(request.user)
+        if request.user.username == 'alex':
+            users = User.objects.all().values()
+            return Response(users, status=status.HTTP_200_OK)
+        else:
+            return Response('geh mal wandern', status=status.HTTP_404_NOT_FOUND)
 
 
 class UserCreate(APIView):
