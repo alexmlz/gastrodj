@@ -112,6 +112,8 @@ def journal_list(request, ):
     authentication_classes = (SessionAuthentication, )
     # mt_id = _getmt()
     user_id = request.user.id
+    #if user_id is None:#
+    #    user_id = 1
     if request.method == 'GET':
         journal_list = Journal.objects.filter(user_id=user_id)
         serializer = JournalSerializer(journal_list, context={'request': request}, many=True)
@@ -136,6 +138,8 @@ def journal(request, journal_id):
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
     user_id = request.user.id
+    #if user_id is None:#
+    #    user_id = 1
     if request.method == 'GET':
         journal = Journal.objects.get(id=journal_id, user_id=user_id)
         serializer = JournalSerializer(journal, context={'request': request}, many=False)
@@ -151,3 +155,32 @@ def journal(request, journal_id):
             Journal.objects.filter(id=journal_id, user_id=user_id).update(**data)
             return Response(data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+def question_list(request, ):
+    permission_classes(permissions.IsAuthenticated,)
+    authentication_classes = (SessionAuthentication, )
+    # mt_id = _getmt()
+    user_id = request.user.id
+    #if user_id is None:#
+    #    user_id = 1
+    if request.method == 'GET':
+        question_list = Question.objects.all()
+        serializer = QuestionSerializer(question_list, context={'request': request}, many=True)
+        return Response(serializer.data)
+        # return JsonResponse(list(product_list), safe=False)
+
+
+@api_view(['GET'])
+def question(request, ):
+    # mt_id = _getmt()
+    permission_classes(permissions.IsAuthenticated,)
+    authentication_classes = (SessionAuthentication, )
+    user_id = request.user.id
+    #if user_id is None:#
+    #    user_id = 1
+    if request.method == 'GET':
+        question = Question.objects.order_by('?')[0]
+        serializer = QuestionSerializer(question, context={'request': request}, many=False)
+        return Response(serializer.data)

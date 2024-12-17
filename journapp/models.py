@@ -14,3 +14,8 @@ class Journal(models.Model):
         null=False
     )
     # categroy can be more than one which means need an own model
+
+class Question(models.Model):
+    question = models.TextField()
+    category = models.CharField(max_length=50)
+    cre_date = models.DateTimeField(auto_now=True)

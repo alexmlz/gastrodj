@@ -79,3 +79,13 @@ class JournalSerializer(serializers.ModelSerializer):
     class Meta:
         model = Journal
         fields = ('id', 'content', 'cre_date', 'subject', 'user')
+
+
+class QuestionSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Question
+        fields = ('id', 'question', 'category', 'cre_date')
+
+
+
