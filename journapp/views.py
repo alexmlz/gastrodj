@@ -157,7 +157,7 @@ def journal(request, journal_id):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
+@api_view(['GET', 'POST'])
 def question_list(request, ):
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
@@ -170,10 +170,23 @@ def question_list(request, ):
         serializer = QuestionSerializer(question_list, context={'request': request}, many=True)
         return Response(serializer.data)
         # return JsonResponse(list(product_list), safe=False)
+    elif request.method == 'POST':
+        new_data = {}
+        data = request.data
+        for da in data:
+            new_data[da] = data[da]
+        new_data['user'] = user_id
+        serializer = QuestionSerializer(data=new_data)
+        if serializer.is_valid():
+            new_question = serializer.save()
+            question_list = Question.objects.all()
+            serializer = QuestionSerializer(question_list, context={'request': request}, many=True)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-@api_view(['GET'])
-def question(request, ):
+@api_view(['GET','DELETE'])
+def question(request, question_id):
     # mt_id = _getmt()
     permission_classes(permissions.IsAuthenticated,)
     authentication_classes = (SessionAuthentication, )
@@ -184,3 +197,11 @@ def question(request, ):
         question = Question.objects.order_by('?')[0]
         serializer = QuestionSerializer(question, context={'request': request}, many=False)
         return Response(serializer.data)
+    elif request.method == 'DELETE':
+        question = Question.objects.filter(id=question_id)
+        question.delete()
+        question_list = Question.objects.all()
+        serializer = QuestionSerializer(question_list, context={'request': request}, many=True)
+        return Response(serializer.data)
+
+
